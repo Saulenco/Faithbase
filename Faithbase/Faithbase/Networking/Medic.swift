@@ -9,11 +9,13 @@ final class Medic: Codable, Equatable {
     let name: String
     let phone: String
     let availability: Bool
+    let speciality: String
 
-    init(name: String, phone: String, availability: Bool) {
+    init(name: String, phone: String, availability: Bool, speciality: String) {
         self.name = name
         self.phone = phone
         self.availability = availability
+        self.speciality = speciality
     }
     
     static func == (lhs: Medic, rhs: Medic) -> Bool {

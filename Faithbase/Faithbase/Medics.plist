@@ -141,9 +141,6 @@
             <false/>
         </dict>
     </array>
-
-    <!-- Additional Specialties -->
-
     <key>Gastroenterology</key>
     <array>
         <dict>
@@ -223,5 +220,24 @@
             <false/>
         </dict>
     </array>
+    <key>Infectious Diseases</key>
+        <array>
+            <dict>
+                <key>Name</key>
+                <string>Dr. Linda Adams</string>
+                <key>Phone</key>
+                <string>555-3012</string>
+                <key>Availability</key>
+                <true/>
+            </dict>
+            <dict>
+                <key>Name</key>
+                <string>Dr. James Turner</string>
+                <key>Phone</key>
+                <string>555-6734</string>
+                <key>Availability</key>
+                <false/>
+            </dict>
+        </array>
 </dict>
 </plist>
