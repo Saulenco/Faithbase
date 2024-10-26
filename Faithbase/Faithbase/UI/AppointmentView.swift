@@ -68,5 +68,5 @@ struct AppointmentView: View {
 
 #Preview {
     AppointmentView(description: "Description of the appointment or details about the medic.",
-                    medic: Medic(name: "John Doe", phone: "123124", availability: true))
+                    medic: Medic(name: "John Doe", phone: "123124", availability: true, speciality: "Cardiology"))
 }

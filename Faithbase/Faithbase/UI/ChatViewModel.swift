@@ -132,14 +132,15 @@ class ChatViewModel: ObservableObject {
         """
         
         endpoint.makeOpenAIRequest(prompt: prompt) { [weak self] response in
-            guard let medic = MedicsRepo.getMedics(response?.speciality ?? "") else {
-                self?.isConverting = false
-                return
-            }
-            
-            let responseMessage = Message(description: response?.message ?? "-",
-                                          medic: medic)
             DispatchQueue.main.async {
+                guard let medic = MedicsRepo.getMedics(response?.speciality ?? "") else {
+                    self?.isConverting = false
+                    return
+                }
+                
+                let responseMessage = Message(description: response?.message ?? "-",
+                                              medic: medic)
+                
                 self?.messages.append(responseMessage)
                 self?.isConverting = false
             }
