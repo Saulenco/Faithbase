@@ -10,7 +10,7 @@ import Foundation
 
 struct OpenAIResponse: Codable {
     let message: String
-    let speciality: String
+    let speciality: String?
 }
 
 class Endpoint {
@@ -40,14 +40,18 @@ class Endpoint {
         let requestBody: [String: Any] = [
             "model": "gpt-3.5-turbo",  // Adjust model as needed
             "messages": [
-                ["role": "user", "content": prompt]  // Pass the prompt as user content
+                ["role": "user", "content": prompt]
             ],
             "temperature": 0.2,
             "max_tokens": 200
         ]
         
         // Convert the body to JSON
-        let jsonData = try? JSONSerialization.data(withJSONObject: requestBody)
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: requestBody) else {
+            print("Failed to serialize request body to JSON")
+            completion(nil)
+            return
+        }
         
         // Prepare the request
         var request = URLRequest(url: url)
@@ -58,39 +62,49 @@ class Endpoint {
         
         // Make the request
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            guard let data = data, error == nil else {
-                print("Error: \(error?.localizedDescription ?? "Unknown error")")
+            if let error = error {
+                print("Error: \(error.localizedDescription)")
                 completion(nil)
                 return
             }
             
-            // Decode the response JSON
-            if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
-               let choices = json["choices"] as? [[String: Any]],
-               let message = choices.first?["message"] as? [String: Any],
-               let content = message["content"] as? String {
-                
-                // Attempt to parse JSON within the response's content
-                if let responseData = content.data(using: .utf8) {
-                    do {
-                        let openAIResponse = try JSONDecoder().decode(OpenAIResponse.self, from: responseData)
-                        completion(openAIResponse)
-                    } catch {
-                        print("Failed to parse message content: \(error)")
-                        completion(nil)
-                    }
-                } else {
-                    print("Failed to convert content to data")
-                    completion(nil)
-                }
-                
-            } else {
-                print("Failed to decode response")
+            guard let data = data else {
+                print("Error: No data received")
                 completion(nil)
+                return
             }
+            
+            
+            self.parseOpenAIResponse(data: data, completion: completion)
         }
         
         task.resume()
     }
-    
+
+    func parseOpenAIResponse(data: Data, completion: @escaping (OpenAIResponse?) -> Void) {
+        // Decode the response JSON
+        if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+           let choices = json["choices"] as? [[String: Any]],
+           let message = choices.first?["message"] as? [String: Any],
+           let content = message["content"] as? String {
+            
+            // Attempt to parse JSON within the response's content
+            if let responseData = content.data(using: .utf8) {
+                do {
+                    let openAIResponse = try JSONDecoder().decode(OpenAIResponse.self, from: responseData)
+                    completion(openAIResponse)
+                } catch {
+                    print("Failed to parse message content: \(error)")
+                    completion(nil)
+                }
+            } else {
+                print("Failed to convert content to data")
+                completion(nil)
+            }
+            
+        } else {
+            print("Failed to decode response JSON")
+            completion(nil)
+        }
+    }
 }

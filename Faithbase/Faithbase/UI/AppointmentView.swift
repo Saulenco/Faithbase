@@ -14,7 +14,6 @@ struct AppointmentView: View {
     
     var body: some View {
         HStack {
-            Spacer()
             VStack(spacing: 16) {
                 // Description field
                 Text(description)
@@ -50,8 +49,8 @@ struct AppointmentView: View {
                             .cornerRadius(8)
                     }
                 }
-                
                 .padding()
+                Spacer()
             }
             .padding()
             .background(Color(.systemBackground))
@@ -62,19 +61,15 @@ struct AppointmentView: View {
             .cornerRadius(16)
             .shadow(radius: 5)
             .frame(maxWidth: UIScreen.main.bounds.width * 0.8,
-                   alignment: .trailing)
+                   alignment: .leading)
         }
     }
 }
 
 #Preview {
     AppointmentView(description: "Description of the appointment or details about the medic.",
-<<<<<<< HEAD
                     medic: Medic(name: "John Doe",
                                  phone: "123124",
                                  availability: true,
-                                 speciality: "ORL"))
-=======
-                    medic: Medic(name: "John Doe", phone: "123124", availability: true, speciality: "Cardiology"))
->>>>>>> 2bd1452b0aa8d5df3bc37ebfd3ccfbd8b42f828b
+                                 speciality: "Cardiology"))
 }

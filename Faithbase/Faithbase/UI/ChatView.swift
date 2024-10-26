@@ -12,6 +12,7 @@ import Speech
 struct ChatView: View {
     @Environment(\.colorScheme) var colorScheme // Detect light or dark mode
     @StateObject var viewModel: ChatViewModel = .init()
+    @State var showDocumentPicker = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -49,7 +50,11 @@ struct ChatView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         ForEach(viewModel.messages) { message in
                             if message.isUser {
-                                userMessageView(message: message.text)
+                                if let document = message.document {
+                                    DocumentView(documentName: document)
+                                } else {
+                                    userMessageView(message: message.text)
+                                }
                             } else if let medic = message.medic {
                                 AppointmentView(description: message.text,
                                                 medic: medic)
@@ -72,7 +77,7 @@ struct ChatView: View {
             Divider()
             
             inputView()
-          
+            
         }
         .background(colorScheme == .dark ? Color.black : Color.white)
     }
@@ -144,6 +149,23 @@ struct ChatView: View {
                         .foregroundColor(.primary)
                 }
             } else {
+                Button(action: {
+                    showDocumentPicker = true
+                }) {
+                    Image(systemName: "paperclip.circle.fill")
+                        .font(.system(size: 25))
+                        .foregroundColor(.accentColor)
+                }
+                .fileImporter(isPresented: $showDocumentPicker, allowedContentTypes: [.pdf, .text, .plainText], allowsMultipleSelection: false, onCompletion: { results in
+                    switch results {
+                    case .success(let fileurls):
+                        print(fileurls.count)
+                        viewModel.getDocument(fileurl: fileurls.first!)
+                    case .failure(let error):
+                        print("Error importing file: \(error)")
+                    }
+                })
+            
                 TextField("Tell me about your problem...", text: $viewModel.inputText)
                     .padding(10)
                     .frame(height: 40)
@@ -152,7 +174,7 @@ struct ChatView: View {
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(Color.secondary.opacity(0.5), lineWidth: 1)
                     )
-                    .padding(.leading, 8)
+                    .padding(.horizontal, 8)
                 
                 if !viewModel.inputText .isEmpty {
                     Button(action: viewModel.sendMessage) {

@@ -8,29 +8,42 @@
 import SwiftUI
 import AVFoundation
 import Speech
+import PDFKit
+import NaturalLanguage
 
 struct Message: Identifiable, Equatable {
     let id = UUID()
     let text: String
     let isUser: Bool
     let medic: Medic?
+    let document: String?
+    
+    init(userDocument: String) {
+        self.text = ""
+        self.isUser = true
+        self.medic = nil
+        self.document = userDocument
+    }
     
     init(userText: String) {
         self.text = userText
         self.isUser = true
         self.medic = nil
+        self.document = nil
     }
     
     init(responseText: String) {
         self.text = responseText
         self.isUser = false
         self.medic = nil
+        self.document = nil
     }
     
-    init(description: String, medic: Medic) {
+    init(description: String, medic: Medic?) {
         self.text = description
         self.medic = medic
         self.isUser = false
+        self.document = nil
     }
 }
 
@@ -146,41 +159,91 @@ class ChatViewModel: ObservableObject {
         self.isLoading = true
         let symptoms = message
         let prompt = """
-        The user will provide a description of their symptoms. Please respond by recommending the type of medical specialist they should consult, using the json format:
-        "{message: Based on your symptoms, it would be best to consult a [specialist type],
-           speciality: speciality
-         }".
-        
-        Consider common medical specialties, such as cardiology, dermatology, gastroenterology, neurology, orthopedics, and psychiatry, and choose the one that best fits the user's symptoms.
-        
-        User's Symptoms: \(symptoms)
-        """
+           The user will input a text containing medical examination data or symptom descriptions. First, analyze the input to determine if it contains medically relevant information about health-related symptoms. If it does, recommend the type of medical specialist they should consult, using the JSON format:
+           
+           {
+             "message": "Based on your symptoms, it would be best to consult a [specialist type]",
+             "specialty": "[specialty]"
+           }
+           
+           Consider common medical specialties, such as cardiology, dermatology, gastroenterology, neurology, orthopedics, and psychiatry, and choose the one that best fits the user's symptoms.
+           
+           If the input does not contain relevant medical information, respond with a JSON format:
+           
+           {
+             "message": "Your input doesn't seem to contain medical symptoms. Could you please describe your symptoms in more detail?",
+             "specialty": "none"
+           }
+           
+           User's Symptoms: \(symptoms)
+           """
         
         endpoint.makeOpenAIRequest(prompt: prompt) { [weak self] response in
-<<<<<<< HEAD
-            guard let medic = MedicsRepo.getMedics(response?.speciality ?? "") else {
-                DispatchQueue.main.async {
-                    self?.isLoading = false
-                }
-                return
+            var medic: Medic?
+            if let speciality = response?.speciality {
+                medic = MedicsRepo.getMedics(speciality)
             }
             
             let responseMessage = Message(description: response?.message ?? "-",
                                           medic: medic)
-=======
->>>>>>> 2bd1452b0aa8d5df3bc37ebfd3ccfbd8b42f828b
             DispatchQueue.main.async {
-                guard let medic = MedicsRepo.getMedics(response?.speciality ?? "") else {
-                    self?.isConverting = false
-                    return
-                }
-                
-                let responseMessage = Message(description: response?.message ?? "-",
-                                              medic: medic)
-                
                 self?.messages.append(responseMessage)
                 self?.isLoading = false
             }
+        }
+    }
+    
+    func extractTextFromPDF(url: URL) -> String? {
+        guard let pdfDocument = PDFDocument(url: url) else { return nil }
+        var text = ""
+        for pageIndex in 0..<pdfDocument.pageCount {
+            if let page = pdfDocument.page(at: pageIndex) {
+                text += page.string ?? ""
+            }
+        }
+        return text
+    }
+    
+    func extractTextFromTXT(url: URL) -> String? {
+        do {
+            return try String(contentsOf: url, encoding: .utf8)
+        } catch {
+            print("Error reading TXT file: \(error)")
+            return nil
+        }
+    }
+    
+    func extractEntities(text: String) -> String {
+        let tagger = NLTagger(tagSchemes: [.nameType])
+        tagger.string = text
+        var formattedText: [String] = []
+        tagger.enumerateTags(in: text.startIndex..<text.endIndex, unit: .word, scheme: .nameType) { tag, range in
+            if let tag = tag {
+                let formatted = "\(text[range]): \(tag.rawValue)"
+                formattedText.append(formatted)
+            }
+            return true
+        }
+        return formattedText.isEmpty ? text : formattedText.joined(separator: ", ")
+    }
+    
+    func getDocument(fileurl: URL) {
+        guard fileurl.startAccessingSecurityScopedResource() else {
+            return
+        }
+        
+        defer { fileurl.stopAccessingSecurityScopedResource() }
+        
+        var text = ""
+        if fileurl.pathExtension.lowercased() == "pdf" {
+            text = extractTextFromPDF(url: fileurl) ?? ""
+        } else if fileurl.pathExtension.lowercased() == "txt" {
+            text = extractTextFromTXT(url: fileurl) ?? ""
+        }
+        if !text.isEmpty {
+            let newMessage = Message(userDocument: fileurl.lastPathComponent)
+            messages.append(newMessage)
+            processMessage(text)
         }
     }
 }
