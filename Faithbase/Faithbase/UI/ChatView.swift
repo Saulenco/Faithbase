@@ -77,7 +77,8 @@ struct ChatView: View {
                                         .background(message.isUser ? Color.accentColor : Color(UIColor.secondarySystemBackground))
                                         .foregroundColor(message.isUser ? .white : .primary)
                                         .cornerRadius(10)
-                                        .frame(maxWidth: UIScreen.main.bounds.width * 0.7, alignment: message.isUser ? .trailing : .leading)
+                                        .frame(maxWidth: UIScreen.main.bounds.width * 0.7,
+                                               alignment: message.isUser ? .trailing : .leading)
                                 } else if let audioURL = message.audioURL {
                                     AudioMessageView(audioURL: audioURL)
                                         .frame(maxWidth: UIScreen.main.bounds.width * 0.7)
@@ -106,24 +107,34 @@ struct ChatView: View {
                         .frame(height: 40)
                         .background(Color(UIColor.secondarySystemBackground))
                         .cornerRadius(8)
-                } else if let recordedAudioURL = recordedAudioURL {
+                } else if recordedAudioURL != nil {
                     HStack {
-                        Button(action: playRecording) {
-                            Image(systemName: "play.circle.fill")
-                                .font(.system(size: 25))
-                                .foregroundColor(.accentColor)
-                        }
+                        WaveformView() // Waveform preview for recorded audio
+                            .frame(height: 40)
+                            .cornerRadius(8)
+                            .padding(.horizontal)
                         
                         Button(action: sendAudioMessage) {
                             Image(systemName: "arrow.up.circle.fill")
                                 .font(.system(size: 25))
                                 .foregroundColor(.accentColor)
                         }
+                        
+                        Button(action: deleteRecording) {
+                            Image(systemName: "trash.circle.fill")
+                                .font(.system(size: 25))
+                                .foregroundColor(.red)
+                        }
                     }
                 } else {
-                    TextField("Type a message...", text: $inputText)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                    TextField("Tell me about your problem...", text: $inputText)
+                        .padding(10)
                         .frame(height: 40)
+                        .background(Color(.systemBackground))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.secondary.opacity(0.5), lineWidth: 1)
+                        )
                         .padding(.leading, 8)
                     
                     Button(action: sendMessage) {
@@ -156,6 +167,10 @@ struct ChatView: View {
             let responseMessage = Message(text: "I'm here to help with your health. How can I assist?", audioURL: nil, isUser: false)
             messages.append(responseMessage)
         }
+    }
+    
+    private func deleteRecording() {
+        recordedAudioURL = nil
     }
     
     private func sendAudioMessage() {
@@ -195,32 +210,6 @@ struct ChatView: View {
     
     private func playRecording() {
         guard let audioURL = recordedAudioURL else { return }
-        do {
-            audioPlayer = try AVAudioPlayer(contentsOf: audioURL)
-            audioPlayer?.play()
-        } catch {
-            print("Failed to play audio: \(error)")
-        }
-    }
-}
-
-struct AudioMessageView: View {
-    var audioURL: URL
-    @State private var audioPlayer: AVAudioPlayer?
-    
-    var body: some View {
-        HStack {
-            Button(action: playAudio) {
-                Image(systemName: "play.circle.fill")
-                    .font(.system(size: 25))
-                    .foregroundColor(.accentColor)
-            }
-            Text("Voice message")
-                .foregroundColor(.primary)
-        }
-    }
-    
-    private func playAudio() {
         do {
             audioPlayer = try AVAudioPlayer(contentsOf: audioURL)
             audioPlayer?.play()
