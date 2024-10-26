@@ -59,10 +59,20 @@ class ChatViewModel: ObservableObject {
     
     private let endpoint = Endpoint()
     
+    func initChat() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.4)) {
+                self.messages.append(Message(responseText: "Hi! Please tell me about your problem."))
+            }
+        }
+    }
+    
     func sendMessage() {
         guard !inputText.isEmpty else { return }
         let newMessage = Message(userText: inputText)
-        messages.append(newMessage)
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.4)) {
+            messages.append(newMessage)
+        }
         inputText = ""
         self.processMessage(newMessage.text)
     }
@@ -152,7 +162,12 @@ class ChatViewModel: ObservableObject {
                                           "Please include more information so we can assist you more effectively."]
         guard hasMoreThanTwoWords(message) else {
             let response = Message(responseText: responseMessages.randomElement() ?? "")
-            self.messages.append(response)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.4)) {
+                    self.messages.append(response)
+                }
+            }
+                
             return
         }
         
@@ -163,7 +178,7 @@ class ChatViewModel: ObservableObject {
            
            {
              "message": "Based on your symptoms, it would be best to consult a [specialist type]",
-             "specialty": "[specialty]"
+             "speciality": "[specialist type]"
            }
            
            Consider common medical specialties, such as cardiology, dermatology, gastroenterology, neurology, orthopedics, and psychiatry, and choose the one that best fits the user's symptoms.
@@ -172,7 +187,7 @@ class ChatViewModel: ObservableObject {
            
            {
              "message": "Your input doesn't seem to contain medical symptoms. Could you please describe your symptoms in more detail?",
-             "specialty": "none"
+             "speciality": "none"
            }
            
            User's Symptoms: \(symptoms)

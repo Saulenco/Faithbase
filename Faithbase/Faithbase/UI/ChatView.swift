@@ -49,18 +49,7 @@ struct ChatView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 8) {
                         ForEach(viewModel.messages) { message in
-                            if message.isUser {
-                                if let document = message.document {
-                                    DocumentView(documentName: document)
-                                } else {
-                                    userMessageView(message: message.text)
-                                }
-                            } else if let medic = message.medic {
-                                AppointmentView(description: message.text,
-                                                medic: medic)
-                            } else {
-                                responseMessageView(message: message.text)
-                            }
+                           messageView(message)
                         }
                     }
                     .padding()
@@ -80,6 +69,27 @@ struct ChatView: View {
             
         }
         .background(colorScheme == .dark ? Color.black : Color.white)
+        .onAppear {
+            viewModel.initChat()
+        }
+    }
+    
+    private func messageView(_ message: Message) -> some View {
+        Group {
+            if message.isUser {
+                if let document = message.document {
+                    DocumentView(documentName: document)
+                } else {
+                    userMessageView(message: message.text)
+                }
+            } else if let medic = message.medic {
+                AppointmentView(description: message.text,
+                                medic: medic)
+            } else {
+                responseMessageView(message: message.text)
+            }
+        }
+        .transition(.move(edge: message.isUser ? .trailing : .leading).combined(with: .opacity))
     }
     
     private func userMessageView(message: String) -> some View{
