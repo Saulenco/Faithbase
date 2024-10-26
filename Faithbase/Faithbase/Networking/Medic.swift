@@ -5,7 +5,7 @@
 //  Created by Constantin Saulenco on 10/26/24.
 //
 
-final class Medic: Codable {
+final class Medic: Codable, Equatable {
     let name: String
     let phone: String
     let availability: Bool
@@ -15,4 +15,10 @@ final class Medic: Codable {
         self.phone = phone
         self.availability = availability
     }
+    
+    static func == (lhs: Medic, rhs: Medic) -> Bool {
+           return lhs.name == rhs.name &&
+                  lhs.phone == rhs.phone &&
+                  lhs.availability == rhs.availability
+       }
 }

@@ -13,7 +13,7 @@ struct Message: Identifiable, Equatable {
     let id = UUID()
     let text: String
     let isUser: Bool
-    let medic: String? // Optional field for chat responses
+    let medic: Medic?
     
     init(userText: String) {
         self.text = userText
@@ -21,7 +21,7 @@ struct Message: Identifiable, Equatable {
         self.medic = nil
     }
     
-    init(description: String, medic: String) {
+    init(description: String, medic: Medic) {
         self.text = description
         self.medic = medic
         self.isUser = false
@@ -132,13 +132,17 @@ class ChatViewModel: ObservableObject {
         """
         
         endpoint.makeOpenAIRequest(prompt: prompt) { [weak self] response in
-            let medic = MedicsRepo.getMedics(response?.speciality ?? "")
+            guard let medic = MedicsRepo.getMedics(response?.speciality ?? "") else {
+                self?.isConverting = false
+                return
+            }
+            
             let responseMessage = Message(description: response?.message ?? "-",
-                                          medic: response?.message ?? "Not found")
+                                          medic: medic)
             DispatchQueue.main.async {
                 self?.messages.append(responseMessage)
+                self?.isConverting = false
             }
-            self?.isConverting = false
         }
     }
 }
