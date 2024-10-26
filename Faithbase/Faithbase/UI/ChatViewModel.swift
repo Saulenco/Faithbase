@@ -21,6 +21,12 @@ struct Message: Identifiable, Equatable {
         self.medic = nil
     }
     
+    init(responseText: String) {
+        self.text = responseText
+        self.isUser = false
+        self.medic = nil
+    }
+    
     init(description: String, medic: Medic) {
         self.text = description
         self.medic = medic
@@ -32,7 +38,7 @@ class ChatViewModel: ObservableObject {
     @Published var messages: [Message] = []
     @Published var inputText: String = ""
     @Published var isRecording: Bool = false
-    @Published var isConverting: Bool = false
+    @Published var isLoading: Bool = false
     @Published var recordedAudioURL: URL? = nil
     
     private var audioRecorder: AVAudioRecorder?
@@ -84,7 +90,7 @@ class ChatViewModel: ObservableObject {
     private func transcribeAudio() {
         guard let recordedAudioURL = recordedAudioURL else { return }
         
-        isConverting = true
+        isLoading = true
         
         SFSpeechRecognizer.requestAuthorization { authStatus in
             switch authStatus {
@@ -94,7 +100,7 @@ class ChatViewModel: ObservableObject {
                 
                 recognizer?.recognitionTask(with: request) { result, error in
                     DispatchQueue.main.async {
-                        self.isConverting = false
+                        self.isLoading = false
                     }
                     
                     if let result = result, result.isFinal {
@@ -110,15 +116,34 @@ class ChatViewModel: ObservableObject {
                 }
             default:
                 DispatchQueue.main.async {
-                    self.isConverting = false
+                    self.isLoading = false
                 }
                 print("Speech recognition authorization denied")
             }
         }
     }
     
+    func hasMoreThanTwoWords(_ input: String) -> Bool {
+        let words = input.split(separator: " ")
+        return words.count > 2
+    }
+    
+    
     private func processMessage(_ message: String) {
-        self.isConverting = true
+        let responseMessages: [String] = ["Could you provide additional information about your issue?",
+                                          "Please share more specifics regarding your problem.",
+                                          "We’d love more details to better understand your situation.",
+                                          "Could you elaborate on the issue you’re experiencing?",
+                                          "Additional context would be helpful in addressing your problem.",
+                                          "Could you describe your problem in more detail?",
+                                          "Please include more information so we can assist you more effectively."]
+        guard hasMoreThanTwoWords(message) else {
+            let response = Message(responseText: responseMessages.randomElement() ?? "")
+            self.messages.append(response)
+            return
+        }
+        
+        self.isLoading = true
         let symptoms = message
         let prompt = """
         The user will provide a description of their symptoms. Please respond by recommending the type of medical specialist they should consult, using the json format:
@@ -133,7 +158,9 @@ class ChatViewModel: ObservableObject {
         
         endpoint.makeOpenAIRequest(prompt: prompt) { [weak self] response in
             guard let medic = MedicsRepo.getMedics(response?.speciality ?? "") else {
-                self?.isConverting = false
+                DispatchQueue.main.async {
+                    self?.isLoading = false
+                }
                 return
             }
             
@@ -141,7 +168,7 @@ class ChatViewModel: ObservableObject {
                                           medic: medic)
             DispatchQueue.main.async {
                 self?.messages.append(responseMessage)
-                self?.isConverting = false
+                self?.isLoading = false
             }
         }
     }

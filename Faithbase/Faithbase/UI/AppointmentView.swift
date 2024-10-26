@@ -11,7 +11,7 @@ struct AppointmentView: View {
     @Environment(\.colorScheme) var colorScheme // Detect light or dark mode
     let description: String
     let medic: Medic
-
+    
     var body: some View {
         HStack {
             Spacer()
@@ -31,20 +31,22 @@ struct AppointmentView: View {
                         .font(.title2)
                         .fontWeight(.bold)
                     
-                    Text("")
+                    Text(medic.speciality)
                         .font(.subheadline)
                         .foregroundColor(.gray)
                     
                     Button(action: {
-                        // Action for appointment
-                        print("Make an appointment tapped")
+                        // Action for calling medic's phone number
+                        if let phoneURL = URL(string: "tel://\(medic.phone)") {
+                            UIApplication.shared.open(phoneURL)
+                        }
                     }) {
                         Text("Make an Appointment")
                             .font(.headline)
                             .foregroundColor(.white)
                             .padding()
                             .frame(maxWidth: .infinity)
-                            .background(Color.blue)
+                            .background(Color.accentColor)
                             .cornerRadius(8)
                     }
                 }
@@ -59,8 +61,7 @@ struct AppointmentView: View {
             )
             .cornerRadius(16)
             .shadow(radius: 5)
-            .padding()
-            .frame(maxWidth: UIScreen.main.bounds.width * 0.7,
+            .frame(maxWidth: UIScreen.main.bounds.width * 0.8,
                    alignment: .trailing)
         }
     }
@@ -68,5 +69,8 @@ struct AppointmentView: View {
 
 #Preview {
     AppointmentView(description: "Description of the appointment or details about the medic.",
-                    medic: Medic(name: "John Doe", phone: "123124", availability: true))
+                    medic: Medic(name: "John Doe",
+                                 phone: "123124",
+                                 availability: true,
+                                 speciality: "ORL"))
 }

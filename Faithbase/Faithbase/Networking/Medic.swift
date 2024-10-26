@@ -10,7 +10,7 @@ final class Medic: Codable, Equatable {
     let phone: String
     let availability: Bool
     let speciality: String
-
+    
     init(name: String, phone: String, availability: Bool, speciality: String) {
         self.name = name
         self.phone = phone
@@ -19,8 +19,9 @@ final class Medic: Codable, Equatable {
     }
     
     static func == (lhs: Medic, rhs: Medic) -> Bool {
-           return lhs.name == rhs.name &&
-                  lhs.phone == rhs.phone &&
-                  lhs.availability == rhs.availability
-       }
+        return lhs.name == rhs.name &&
+        lhs.phone == rhs.phone &&
+        lhs.availability == rhs.availability &&
+        lhs.speciality == rhs.speciality
+    }
 }

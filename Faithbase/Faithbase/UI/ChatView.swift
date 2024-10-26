@@ -54,7 +54,7 @@ struct ChatView: View {
                                 AppointmentView(description: message.text,
                                                 medic: medic)
                             } else {
-                                
+                                responseMessageView(message: message.text)
                             }
                         }
                     }
@@ -68,6 +68,9 @@ struct ChatView: View {
                     }
                 }
             }
+            
+            Divider()
+            
             inputView()
           
         }
@@ -86,6 +89,21 @@ struct ChatView: View {
                     .frame(maxWidth: UIScreen.main.bounds.width * 0.7,
                            alignment: .trailing)
             }
+        }
+    }
+    
+    private func responseMessageView(message: String) -> some View{
+        HStack {
+            if !message.isEmpty {
+                Text(message)
+                    .padding()
+                    .background(Color(UIColor.secondarySystemBackground))
+                    .foregroundColor(.primary)
+                    .cornerRadius(10)
+                    .frame(maxWidth: UIScreen.main.bounds.width * 0.7,
+                           alignment: .leading)
+            }
+            Spacer()
         }
     }
     
@@ -115,12 +133,12 @@ struct ChatView: View {
                             .foregroundColor(.red)
                     }
                 }
-            } else if viewModel.isConverting {
+            } else if viewModel.isLoading {
                 HStack  {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: .blue))
                         .scaleEffect(1.5)
-                    Text("Converting audio to text…")
+                    Text("Loading...")
                         .font(.headline)
                         .padding(.leading, 8)
                         .foregroundColor(.primary)
@@ -136,17 +154,21 @@ struct ChatView: View {
                     )
                     .padding(.leading, 8)
                 
-                Button(action: viewModel.sendMessage) {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .font(.system(size: 25))
-                        .foregroundColor(.accentColor)
+                if !viewModel.inputText .isEmpty {
+                    Button(action: viewModel.sendMessage) {
+                        Image(systemName: "arrow.up.circle.fill")
+                            .font(.system(size: 25))
+                            .foregroundColor(.accentColor)
+                    }
                 }
             }
             
-            Button(action: viewModel.isRecording ? viewModel.stopRecording : viewModel.startRecording) {
-                Image(systemName: viewModel.isRecording ? "stop.circle.fill" : "mic.circle.fill")
-                    .font(.system(size: 25))
-                    .foregroundColor(viewModel.isRecording ? .red : .accentColor)
+            if !viewModel.isLoading && viewModel.inputText.isEmpty {
+                Button(action: viewModel.isRecording ? viewModel.stopRecording : viewModel.startRecording) {
+                    Image(systemName: viewModel.isRecording ? "stop.circle.fill" : "mic.circle.fill")
+                        .font(.system(size: 25))
+                        .foregroundColor(viewModel.isRecording ? .red : .accentColor)
+                }
             }
         }
         .padding()
