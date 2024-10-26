@@ -7,18 +7,15 @@
 
 import SwiftUI
 import AVFoundation
-import SwiftUI
-import AVFoundation
+import Speech
 
 struct Message: Identifiable, Equatable {
     let id = UUID()
-    let text: String?
-    let audioURL: URL?
+    let text: String
     let isUser: Bool
     
-    init(text: String?, audioURL: URL?, isUser: Bool) {
+    init(text: String,  isUser: Bool) {
         self.text = text
-        self.audioURL = audioURL
         self.isUser = isUser
     }
 }
@@ -31,6 +28,7 @@ struct ChatView: View {
     @State private var audioRecorder: AVAudioRecorder?
     @State private var recordedAudioURL: URL?
     @State private var audioPlayer: AVAudioPlayer?
+    @State private var isConverting: Bool = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -71,17 +69,14 @@ struct ChatView: View {
                                 if message.isUser {
                                     Spacer()
                                 }
-                                if let text = message.text {
-                                    Text(text)
+                                if !message.text.isEmpty {
+                                    Text(message.text)
                                         .padding()
                                         .background(message.isUser ? Color.accentColor : Color(UIColor.secondarySystemBackground))
                                         .foregroundColor(message.isUser ? .white : .primary)
                                         .cornerRadius(10)
                                         .frame(maxWidth: UIScreen.main.bounds.width * 0.7,
                                                alignment: message.isUser ? .trailing : .leading)
-                                } else if let audioURL = message.audioURL {
-                                    AudioMessageView(audioURL: audioURL)
-                                        .frame(maxWidth: UIScreen.main.bounds.width * 0.7)
                                 }
                                 if !message.isUser {
                                     Spacer()
@@ -107,14 +102,14 @@ struct ChatView: View {
                         .frame(height: 40)
                         .background(Color(UIColor.secondarySystemBackground))
                         .cornerRadius(8)
-                } else if recordedAudioURL != nil {
+                } else if (recordedAudioURL != nil && isRecording) {
                     HStack {
                         WaveformView() // Waveform preview for recorded audio
                             .frame(height: 40)
                             .cornerRadius(8)
                             .padding(.horizontal)
                         
-                        Button(action: sendAudioMessage) {
+                        Button(action: stopRecording) {
                             Image(systemName: "arrow.up.circle.fill")
                                 .font(.system(size: 25))
                                 .foregroundColor(.accentColor)
@@ -125,6 +120,16 @@ struct ChatView: View {
                                 .font(.system(size: 25))
                                 .foregroundColor(.red)
                         }
+                    }
+                } else if isConverting {
+                    HStack  {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+                            .scaleEffect(1.5)
+                        Text("Converting audio to text…")
+                            .font(.headline)
+                            .padding(.leading, 8)
+                            .foregroundColor(.primary)
                     }
                 } else {
                     TextField("Tell me about your problem...", text: $inputText)
@@ -156,27 +161,25 @@ struct ChatView: View {
         .background(colorScheme == .dark ? Color.black : Color.white)
     }
     
-    private func sendMessage() {
-        guard !inputText.isEmpty else { return }
-        let newMessage = Message(text: inputText, audioURL: nil, isUser: true)
-        messages.append(newMessage)
-        inputText = ""
-        
+    private func getReply() {
         // Simulate response
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            let responseMessage = Message(text: "I'm here to help with your health. How can I assist?", audioURL: nil, isUser: false)
+            let responseMessage = Message(text: "I'm here to help with your health. How can I assist?",
+                                          isUser: false)
             messages.append(responseMessage)
         }
     }
     
-    private func deleteRecording() {
-        recordedAudioURL = nil
+    private func sendMessage() {
+        guard !inputText.isEmpty else { return }
+        let newMessage = Message(text: inputText,
+                                 isUser: true)
+        messages.append(newMessage)
+        inputText = ""
+        getReply()
     }
     
-    private func sendAudioMessage() {
-        guard let audioURL = recordedAudioURL else { return }
-        let newMessage = Message(text: nil, audioURL: audioURL, isUser: true)
-        messages.append(newMessage)
+    private func deleteRecording() {
         recordedAudioURL = nil
     }
     
@@ -206,15 +209,42 @@ struct ChatView: View {
     private func stopRecording() {
         audioRecorder?.stop()
         isRecording = false
+        transcribeAudio()
     }
     
-    private func playRecording() {
-        guard let audioURL = recordedAudioURL else { return }
-        do {
-            audioPlayer = try AVAudioPlayer(contentsOf: audioURL)
-            audioPlayer?.play()
-        } catch {
-            print("Failed to play audio: \(error)")
+    private func transcribeAudio() {
+        guard let recordedAudioURL = recordedAudioURL else { return }
+        
+        isConverting = true // Show loading view
+
+        SFSpeechRecognizer.requestAuthorization { authStatus in
+            switch authStatus {
+            case .authorized:
+                let recognizer = SFSpeechRecognizer()
+                let request = SFSpeechURLRecognitionRequest(url: recordedAudioURL)
+                
+                recognizer?.recognitionTask(with: request) { result, error in
+                    DispatchQueue.main.async {
+                        self.isConverting = false // Hide loading view
+                    }
+                    
+                    if let result = result {
+                        let messageText = result.bestTranscription.formattedString
+                        DispatchQueue.main.async {
+                            let newMessage = Message(text: messageText,
+                                                     isUser: true)
+                            self.messages.append(newMessage)
+                        }
+                    } else if let error = error {
+                        print("Transcription error: \(error)")
+                    }
+                }
+            default:
+                DispatchQueue.main.async {
+                    self.isConverting = false // Hide loading view if authorization fails
+                }
+                print("Speech recognition authorization denied")
+            }
         }
     }
 }
