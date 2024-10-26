@@ -187,7 +187,6 @@ class ChatViewModel: ObservableObject {
            
            {
              "message": "Your input doesn't seem to contain medical symptoms. Could you please describe your symptoms in more detail?",
-             "speciality": "none"
            }
            
            User's Symptoms: \(symptoms)

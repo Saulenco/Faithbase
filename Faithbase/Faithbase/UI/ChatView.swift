@@ -17,32 +17,7 @@ struct ChatView: View {
     var body: some View {
         VStack(spacing: 0) {
             // Header
-            VStack {
-                HStack {
-                    Image("icon")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 60, height: 60)
-                    
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Health Assistant")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundColor(.primary)
-                        
-                        Text("Chat with me to identify health concerns.")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(.leading, 8)
-                    
-                    Spacer()
-                }
-                .padding()
-                
-                Divider()
-            }
-            .background(colorScheme == .dark ? Color.black : Color.white)
+            titleView
             
             // Chat Messages
             ScrollViewReader { proxy in
@@ -50,6 +25,12 @@ struct ChatView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         ForEach(viewModel.messages) { message in
                            messageView(message)
+                        }
+                        if viewModel.isLoading {
+                            HStack {
+                                LoadingAnimationView()
+                            }
+                            .padding()
                         }
                     }
                     .padding()
@@ -72,6 +53,35 @@ struct ChatView: View {
         .onAppear {
             viewModel.initChat()
         }
+    }
+    
+    private var titleView: some View {
+        VStack {
+            HStack {
+                Image("icon")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 60, height: 60)
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Health Assistant")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.primary)
+                    
+                    Text("Chat with me to identify health concerns.")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.leading, 8)
+                
+                Spacer()
+            }
+            .padding()
+            
+            Divider()
+        }
+        .background(colorScheme == .dark ? Color.black : Color.white)
     }
     
     private func messageView(_ message: Message) -> some View {
@@ -148,17 +158,7 @@ struct ChatView: View {
                             .foregroundColor(.red)
                     }
                 }
-            } else if viewModel.isLoading {
-                HStack  {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .blue))
-                        .scaleEffect(1.5)
-                    Text("Loading...")
-                        .font(.headline)
-                        .padding(.leading, 8)
-                        .foregroundColor(.primary)
-                }
-            } else {
+            } else if !viewModel.isLoading  {
                 Button(action: {
                     showDocumentPicker = true
                 }) {
