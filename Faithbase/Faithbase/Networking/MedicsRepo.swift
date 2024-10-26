@@ -54,12 +54,14 @@ final class MedicsRepo {
             print("Could not load Medics.plist")
             return nil
         }
-        
-        let threshold: Double = 60.0
+
+        var matches = data.keys.compactMap{ specialty in
+            return  (specialty, similarityPercentage(partialName, specialty))
+        }
+
+        matches = matches.sorted(by: { $0.1 > $1.1 })
         // Find the closest matching specialty
-        guard let matchedSpecialty = data.keys.first(where: { specialty in
-            similarityPercentage(partialName, specialty) >= threshold
-        }) else {
+        guard let matchedSpecialty = matches.first?.0 else {
             print("No matching specialty found.")
             return nil
         }
