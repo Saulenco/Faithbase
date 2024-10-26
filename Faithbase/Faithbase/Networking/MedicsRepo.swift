@@ -8,26 +8,26 @@
 import Foundation
 
 final class MedicsRepo {
-
+    
     class func getMedics(_ query: String) -> Medic? {
         let medics = findMedics(for: query)
         return medics?.first
     }
-
+    
     private class func levenshteinDistance(_ s1: String, _ s2: String) -> Int {
         let s1Count = s1.count
         let s2Count = s2.count
-
+        
         var matrix = Array(repeating: Array(repeating: 0, count: s2Count + 1), count: s1Count + 1)
-
+        
         for i in 0...s1Count {
             matrix[i][0] = i
         }
-
+        
         for j in 0...s2Count {
             matrix[0][j] = j
         }
-
+        
         for (i, s1Char) in s1.enumerated() {
             for (j, s2Char) in s2.enumerated() {
                 if s1Char == s2Char {
@@ -37,7 +37,7 @@ final class MedicsRepo {
                 }
             }
         }
-
+        
         return matrix[s1Count][s2Count]
     }
     
@@ -46,7 +46,7 @@ final class MedicsRepo {
         let maxLength = max(s1.count, s2.count)
         return (1.0 - (Double(distance) / Double(maxLength))) * 100
     }
-
+    
     private class func findMedics(for partialName: String) -> [Medic]? {
         // Load the Medics.plist file
         guard let path = Bundle.main.path(forResource: "Medics", ofType: "plist"),
@@ -54,7 +54,7 @@ final class MedicsRepo {
             print("Could not load Medics.plist")
             return nil
         }
-
+        
         let threshold: Double = 60.0
         // Find the closest matching specialty
         guard let matchedSpecialty = data.keys.first(where: { specialty in
@@ -63,13 +63,13 @@ final class MedicsRepo {
             print("No matching specialty found.")
             return nil
         }
-
+        
         // Extract medics for the matched specialty
         guard let medicsArray = data[matchedSpecialty] as? [[String: Any]] else {
             print("Error reading medics for specialty: \(matchedSpecialty)")
             return nil
         }
-
+        
         // Convert data to Medic objects
         let medics = medicsArray.compactMap { medicDict -> Medic? in
             guard let name = medicDict["Name"] as? String,
@@ -77,9 +77,9 @@ final class MedicsRepo {
                   let availability = medicDict["Availability"] as? Bool else {
                 return nil
             }
-            return Medic(name: name, phone: phone, availability: availability)
+            return Medic(name: name, phone: phone, availability: availability, speciality: matchedSpecialty)
         }
-
+        
         return medics
     }
 }
