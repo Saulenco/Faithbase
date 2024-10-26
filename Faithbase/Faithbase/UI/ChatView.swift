@@ -229,11 +229,13 @@ struct ChatView: View {
                     }
                     
                     if let result = result {
-                        let messageText = result.bestTranscription.formattedString
-                        DispatchQueue.main.async {
-                            let newMessage = Message(text: messageText,
-                                                     isUser: true)
-                            self.messages.append(newMessage)
+                        // Only add the message once when the transcription is final
+                        if result.isFinal {
+                            let messageText = result.bestTranscription.formattedString
+                            DispatchQueue.main.async {
+                                let newMessage = Message(text: messageText, isUser: true)
+                                self.messages.append(newMessage)
+                            }
                         }
                     } else if let error = error {
                         print("Transcription error: \(error)")
