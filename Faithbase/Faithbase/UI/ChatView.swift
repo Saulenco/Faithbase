@@ -9,26 +9,9 @@ import SwiftUI
 import AVFoundation
 import Speech
 
-struct Message: Identifiable, Equatable {
-    let id = UUID()
-    let text: String
-    let isUser: Bool
-    
-    init(text: String,  isUser: Bool) {
-        self.text = text
-        self.isUser = isUser
-    }
-}
-
 struct ChatView: View {
     @Environment(\.colorScheme) var colorScheme // Detect light or dark mode
-    @State private var messages: [Message] = []
-    @State private var inputText: String = ""
-    @State private var isRecording: Bool = false
-    @State private var audioRecorder: AVAudioRecorder?
-    @State private var recordedAudioURL: URL?
-    @State private var audioPlayer: AVAudioPlayer?
-    @State private var isConverting: Bool = false
+    @StateObject var viewModel: ChatViewModel = .init()
     
     var body: some View {
         VStack(spacing: 0) {
@@ -64,7 +47,7 @@ struct ChatView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 8) {
-                        ForEach(messages) { message in
+                        ForEach(viewModel.messages) { message in
                             HStack {
                                 if message.isUser {
                                     Spacer()
@@ -86,8 +69,8 @@ struct ChatView: View {
                     }
                     .padding()
                 }
-                .onChange(of: messages) { _ in
-                    if let lastMessage = messages.last {
+                .onChange(of: viewModel.messages) { _ in
+                    if let lastMessage = viewModel.messages.last {
                         withAnimation {
                             proxy.scrollTo(lastMessage.id, anchor: .bottom)
                         }
@@ -97,31 +80,31 @@ struct ChatView: View {
             
             // Input Area
             HStack(spacing: 10) {
-                if isRecording {
+                if viewModel.isRecording {
                     WaveformView() // Custom Waveform View
                         .frame(height: 40)
                         .background(Color(UIColor.secondarySystemBackground))
                         .cornerRadius(8)
-                } else if (recordedAudioURL != nil && isRecording) {
+                } else if (viewModel.recordedAudioURL != nil && viewModel.isRecording) {
                     HStack {
                         WaveformView() // Waveform preview for recorded audio
                             .frame(height: 40)
                             .cornerRadius(8)
                             .padding(.horizontal)
                         
-                        Button(action: stopRecording) {
+                        Button(action: viewModel.stopRecording) {
                             Image(systemName: "arrow.up.circle.fill")
                                 .font(.system(size: 25))
                                 .foregroundColor(.accentColor)
                         }
                         
-                        Button(action: deleteRecording) {
+                        Button(action: viewModel.deleteRecording) {
                             Image(systemName: "trash.circle.fill")
                                 .font(.system(size: 25))
                                 .foregroundColor(.red)
                         }
                     }
-                } else if isConverting {
+                } else if viewModel.isConverting {
                     HStack  {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .blue))
@@ -132,7 +115,7 @@ struct ChatView: View {
                             .foregroundColor(.primary)
                     }
                 } else {
-                    TextField("Tell me about your problem...", text: $inputText)
+                    TextField("Tell me about your problem...", text: $viewModel.inputText)
                         .padding(10)
                         .frame(height: 40)
                         .background(Color(.systemBackground))
@@ -142,17 +125,17 @@ struct ChatView: View {
                         )
                         .padding(.leading, 8)
                     
-                    Button(action: sendMessage) {
+                    Button(action: viewModel.sendMessage) {
                         Image(systemName: "arrow.up.circle.fill")
                             .font(.system(size: 25))
                             .foregroundColor(.accentColor)
                     }
                 }
                 
-                Button(action: isRecording ? stopRecording : startRecording) {
-                    Image(systemName: isRecording ? "stop.circle.fill" : "mic.circle.fill")
+                Button(action: viewModel.isRecording ? viewModel.stopRecording : viewModel.startRecording) {
+                    Image(systemName: viewModel.isRecording ? "stop.circle.fill" : "mic.circle.fill")
                         .font(.system(size: 25))
-                        .foregroundColor(isRecording ? .red : .accentColor)
+                        .foregroundColor(viewModel.isRecording ? .red : .accentColor)
                 }
             }
             .padding()
@@ -160,95 +143,95 @@ struct ChatView: View {
         }
         .background(colorScheme == .dark ? Color.black : Color.white)
     }
-    
-    private func getReply() {
-        // Simulate response
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            let responseMessage = Message(text: "I'm here to help with your health. How can I assist?",
-                                          isUser: false)
-            messages.append(responseMessage)
-        }
-    }
-    
-    private func sendMessage() {
-        guard !inputText.isEmpty else { return }
-        let newMessage = Message(text: inputText,
-                                 isUser: true)
-        messages.append(newMessage)
-        inputText = ""
-        getReply()
-    }
-    
-    private func deleteRecording() {
-        recordedAudioURL = nil
-    }
-    
-    private func startRecording() {
-        isRecording = true
-        let audioSession = AVAudioSession.sharedInstance()
-        do {
-            try audioSession.setCategory(.playAndRecord, mode: .default)
-            try audioSession.setActive(true)
-            
-            let settings = [
-                AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
-                AVSampleRateKey: 12000,
-                AVNumberOfChannelsKey: 1,
-                AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
-            ]
-            let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            recordedAudioURL = documentDirectory.appendingPathComponent("recording.m4a")
-            
-            audioRecorder = try AVAudioRecorder(url: recordedAudioURL!, settings: settings)
-            audioRecorder?.record()
-        } catch {
-            print("Failed to start recording: \(error)")
-        }
-    }
-    
-    private func stopRecording() {
-        audioRecorder?.stop()
-        isRecording = false
-        transcribeAudio()
-    }
-    
-    private func transcribeAudio() {
-        guard let recordedAudioURL = recordedAudioURL else { return }
-        
-        isConverting = true // Show loading view
-
-        SFSpeechRecognizer.requestAuthorization { authStatus in
-            switch authStatus {
-            case .authorized:
-                let recognizer = SFSpeechRecognizer()
-                let request = SFSpeechURLRecognitionRequest(url: recordedAudioURL)
-                
-                recognizer?.recognitionTask(with: request) { result, error in
-                    DispatchQueue.main.async {
-                        self.isConverting = false // Hide loading view
-                    }
-                    
-                    if let result = result {
-                        // Only add the message once when the transcription is final
-                        if result.isFinal {
-                            let messageText = result.bestTranscription.formattedString
-                            DispatchQueue.main.async {
-                                let newMessage = Message(text: messageText, isUser: true)
-                                self.messages.append(newMessage)
-                            }
-                        }
-                    } else if let error = error {
-                        print("Transcription error: \(error)")
-                    }
-                }
-            default:
-                DispatchQueue.main.async {
-                    self.isConverting = false // Hide loading view if authorization fails
-                }
-                print("Speech recognition authorization denied")
-            }
-        }
-    }
+//    
+//    private func getReply() {
+//        // Simulate response
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+//            let responseMessage = Message(text: "I'm here to help with your health. How can I assist?",
+//                                          isUser: false)
+//            messages.append(viewModel.responseMessage)
+//        }
+//    }
+//    
+//    private func sendMessage() {
+//        guard !inputText.isEmpty else { return }
+//        let newMessage = Message(text: inputText,
+//                                 isUser: true)
+//        messages.append(newMessage)
+//        inputText = ""
+//        getReply()
+//    }
+//    
+//    private func deleteRecording() {
+//        recordedAudioURL = nil
+//    }
+//    
+//    private func startRecording() {
+//        isRecording = true
+//        let audioSession = AVAudioSession.sharedInstance()
+//        do {
+//            try audioSession.setCategory(.playAndRecord, mode: .default)
+//            try audioSession.setActive(true)
+//            
+//            let settings = [
+//                AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
+//                AVSampleRateKey: 12000,
+//                AVNumberOfChannelsKey: 1,
+//                AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
+//            ]
+//            let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+//            recordedAudioURL = documentDirectory.appendingPathComponent("recording.m4a")
+//            
+//            audioRecorder = try AVAudioRecorder(url: recordedAudioURL!, settings: settings)
+//            audioRecorder?.record()
+//        } catch {
+//            print("Failed to start recording: \(error)")
+//        }
+//    }
+//    
+//    private func stopRecording() {
+//        audioRecorder?.stop()
+//        isRecording = false
+//        transcribeAudio()
+//    }
+//    
+//    private func transcribeAudio() {
+//        guard let recordedAudioURL = recordedAudioURL else { return }
+//        
+//        isConverting = true // Show loading view
+//
+//        SFSpeechRecognizer.requestAuthorization { authStatus in
+//            switch authStatus {
+//            case .authorized:
+//                let recognizer = SFSpeechRecognizer()
+//                let request = SFSpeechURLRecognitionRequest(url: recordedAudioURL)
+//                
+//                recognizer?.recognitionTask(with: request) { result, error in
+//                    DispatchQueue.main.async {
+//                        self.isConverting = false // Hide loading view
+//                    }
+//                    
+//                    if let result = result {
+//                        // Only add the message once when the transcription is final
+//                        if result.isFinal {
+//                            let messageText = result.bestTranscription.formattedString
+//                            DispatchQueue.main.async {
+//                                let newMessage = Message(text: messageText, isUser: true)
+//                                self.messages.append(newMessage)
+//                            }
+//                        }
+//                    } else if let error = error {
+//                        print("Transcription error: \(error)")
+//                    }
+//                }
+//            default:
+//                DispatchQueue.main.async {
+//                    self.isConverting = false // Hide loading view if authorization fails
+//                }
+//                print("Speech recognition authorization denied")
+//            }
+//        }
+//    }
 }
 
 #Preview {
