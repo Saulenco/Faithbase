@@ -60,6 +60,7 @@ class ChatViewModel: ObservableObject {
     private let endpoint = Endpoint()
     
     func initChat() {
+        messages.removeAll()
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.4)) {
                 self.messages.append(Message(responseText: "Hi! Please tell me about your problem."))
@@ -155,7 +156,9 @@ class ChatViewModel: ObservableObject {
                "How severe would you rate your symptoms on a scale of 1-10?"]
        
     private func processMessages() {
-        let allMessages = messages.map{$0.text}.joined(separator: ", ")
+        var messagesToProcess = messages
+        messagesToProcess.removeFirst()
+        let allMessages = messagesToProcess.map{$0.text}.joined(separator: ", ")
         guard hasMoreThanTwoWords(allMessages) else {
             askForMoreDetails()
             return

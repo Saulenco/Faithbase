@@ -17,7 +17,21 @@ struct ChatView: View {
     var body: some View {
         VStack(spacing: 0) {
             // Header
-            titleView
+            ZStack(alignment: .bottomTrailing) {
+                titleView
+                
+                Button(action: {
+                    viewModel.initChat()
+                }) {
+                    Image(systemName: "arrow.counterclockwise")
+                            .frame(width: 20, height: 20)
+                    .foregroundColor(.white)
+                    .padding(8)
+                    .background(Color.accentColor)
+                    .clipShape(Circle())
+                }
+                .offset(x: -10, y: 8)
+            }
             
             // Chat Messages
             ScrollViewReader { proxy in
@@ -84,7 +98,7 @@ struct ChatView: View {
                 }
                 .padding(.leading, 8)
                 
-                Spacer()
+                Spacer(minLength: 20)
             }
             .padding()
             
