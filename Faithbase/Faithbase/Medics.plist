@@ -2,242 +2,252 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>Cardiology</key>
-    <array>
-        <dict>
-            <key>Name</key>
-            <string>Dr. Alex Johnson</string>
-            <key>Phone</key>
-            <string>555-0123</string>
-            <key>Availability</key>
-            <true/>
-        </dict>
-        <dict>
-            <key>Name</key>
-            <string>Dr. Sarah Lee</string>
-            <key>Phone</key>
-            <string>555-0456</string>
-            <key>Availability</key>
-            <false/>
-        </dict>
-    </array>
-
-    <key>Dermatology</key>
-    <array>
-        <dict>
-            <key>Name</key>
-            <string>Dr. Emily White</string>
-            <key>Phone</key>
-            <string>555-0789</string>
-            <key>Availability</key>
-            <true/>
-        </dict>
-        <dict>
-            <key>Name</key>
-            <string>Dr. Marcus Brown</string>
-            <key>Phone</key>
-            <string>555-0234</string>
-            <key>Availability</key>
-            <false/>
-        </dict>
-    </array>
-
-    <key>Neurology</key>
-    <array>
-        <dict>
-            <key>Name</key>
-            <string>Dr. Rachel Green</string>
-            <key>Phone</key>
-            <string>555-0112</string>
-            <key>Availability</key>
-            <true/>
-        </dict>
-        <dict>
-            <key>Name</key>
-            <string>Dr. Tom Hanks</string>
-            <key>Phone</key>
-            <string>555-0784</string>
-            <key>Availability</key>
-            <false/>
-        </dict>
-    </array>
-
-    <key>Orthopedics</key>
-    <array>
-        <dict>
-            <key>Name</key>
-            <string>Dr. Paul Wright</string>
-            <key>Phone</key>
-            <string>555-0457</string>
-            <key>Availability</key>
-            <true/>
-        </dict>
-        <dict>
-            <key>Name</key>
-            <string>Dr. Lisa Roberts</string>
-            <key>Phone</key>
-            <string>555-0678</string>
-            <key>Availability</key>
-            <false/>
-        </dict>
-    </array>
-
-    <key>Pediatrics</key>
-    <array>
-        <dict>
-            <key>Name</key>
-            <string>Dr. Hannah Gray</string>
-            <key>Phone</key>
-            <string>555-0912</string>
-            <key>Availability</key>
-            <true/>
-        </dict>
-        <dict>
-            <key>Name</key>
-            <string>Dr. Steve Martins</string>
-            <key>Phone</key>
-            <string>555-0810</string>
-            <key>Availability</key>
-            <false/>
-        </dict>
-    </array>
-
-    <key>Ophthalmology</key>
-    <array>
-        <dict>
-            <key>Name</key>
-            <string>Dr. Clara Smith</string>
-            <key>Phone</key>
-            <string>555-1234</string>
-            <key>Availability</key>
-            <true/>
-        </dict>
-        <dict>
-            <key>Name</key>
-            <string>Dr. John Brown</string>
-            <key>Phone</key>
-            <string>555-5678</string>
-            <key>Availability</key>
-            <false/>
-        </dict>
-    </array>
-
-    <key>Endocrinology</key>
-    <array>
-        <dict>
-            <key>Name</key>
-            <string>Dr. Betty Lewis</string>
-            <key>Phone</key>
-            <string>555-9101</string>
-            <key>Availability</key>
-            <true/>
-        </dict>
-        <dict>
-            <key>Name</key>
-            <string>Dr. Gary Cole</string>
-            <key>Phone</key>
-            <string>555-1414</string>
-            <key>Availability</key>
-            <false/>
-        </dict>
-    </array>
-    <key>Gastroenterology</key>
-    <array>
-        <dict>
-            <key>Name</key>
-            <string>Dr. Nancy Clark</string>
-            <key>Phone</key>
-            <string>555-1515</string>
-            <key>Availability</key>
-            <true/>
-        </dict>
-        <dict>
-            <key>Name</key>
-            <string>Dr. Henry Adams</string>
-            <key>Phone</key>
-            <string>555-1616</string>
-            <key>Availability</key>
-            <false/>
-        </dict>
-    </array>
-
-    <key>Psychiatry</key>
-    <array>
-        <dict>
-            <key>Name</key>
-            <string>Dr. Sophia Williams</string>
-            <key>Phone</key>
-            <string>555-1717</string>
-            <key>Availability</key>
-            <true/>
-        </dict>
-        <dict>
-            <key>Name</key>
-            <string>Dr. Daniel Thomas</string>
-            <key>Phone</key>
-            <string>555-1818</string>
-            <key>Availability</key>
-            <false/>
-        </dict>
-    </array>
-
-    <key>Oncology</key>
-    <array>
-        <dict>
-            <key>Name</key>
-            <string>Dr. Laura James</string>
-            <key>Phone</key>
-            <string>555-1919</string>
-            <key>Availability</key>
-            <true/>
-        </dict>
-        <dict>
-            <key>Name</key>
-            <string>Dr. George Wilson</string>
-            <key>Phone</key>
-            <string>555-2020</string>
-            <key>Availability</key>
-            <false/>
-        </dict>
-    </array>
-
-    <key>Urology</key>
-    <array>
-        <dict>
-            <key>Name</key>
-            <string>Dr. Chris Evans</string>
-            <key>Phone</key>
-            <string>555-2121</string>
-            <key>Availability</key>
-            <true/>
-        </dict>
-        <dict>
-            <key>Name</key>
-            <string>Dr. Olivia Brown</string>
-            <key>Phone</key>
-            <string>555-2222</string>
-            <key>Availability</key>
-            <false/>
-        </dict>
-    </array>
-    <key>Infectious Diseases</key>
-        <array>
-            <dict>
-                <key>Name</key>
-                <string>Dr. Linda Adams</string>
-                <key>Phone</key>
-                <string>555-3012</string>
-                <key>Availability</key>
-                <true/>
-            </dict>
-            <dict>
-                <key>Name</key>
-                <string>Dr. James Turner</string>
-                <key>Phone</key>
-                <string>555-6734</string>
-                <key>Availability</key>
-                <false/>
-            </dict>
-        </array>
+	<key>Cardiology</key>
+	<array>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Alex Johnson</string>
+			<key>Phone</key>
+			<string>555-0123</string>
+			<key>Availability</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Sarah Lee</string>
+			<key>Phone</key>
+			<string>555-0456</string>
+			<key>Availability</key>
+			<false/>
+		</dict>
+	</array>
+	<key>Dermatology</key>
+	<array>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Emily White</string>
+			<key>Phone</key>
+			<string>555-0789</string>
+			<key>Availability</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Marcus Brown</string>
+			<key>Phone</key>
+			<string>555-0234</string>
+			<key>Availability</key>
+			<false/>
+		</dict>
+	</array>
+	<key>Neurology</key>
+	<array>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Rachel Green</string>
+			<key>Phone</key>
+			<string>555-0112</string>
+			<key>Availability</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Tom Hanks</string>
+			<key>Phone</key>
+			<string>555-0784</string>
+			<key>Availability</key>
+			<false/>
+		</dict>
+	</array>
+	<key>Orthopedics</key>
+	<array>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Paul Wright</string>
+			<key>Phone</key>
+			<string>555-0457</string>
+			<key>Availability</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Lisa Roberts</string>
+			<key>Phone</key>
+			<string>555-0678</string>
+			<key>Availability</key>
+			<false/>
+		</dict>
+	</array>
+	<key>Pediatrics</key>
+	<array>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Hannah Gray</string>
+			<key>Phone</key>
+			<string>555-0912</string>
+			<key>Availability</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Steve Martins</string>
+			<key>Phone</key>
+			<string>555-0810</string>
+			<key>Availability</key>
+			<false/>
+		</dict>
+	</array>
+	<key>Ophthalmology</key>
+	<array>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Clara Smith</string>
+			<key>Phone</key>
+			<string>555-1234</string>
+			<key>Availability</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>Name</key>
+			<string>Dr. John Brown</string>
+			<key>Phone</key>
+			<string>555-5678</string>
+			<key>Availability</key>
+			<false/>
+		</dict>
+	</array>
+	<key>Endocrinology</key>
+	<array>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Betty Lewis</string>
+			<key>Phone</key>
+			<string>555-9101</string>
+			<key>Availability</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Gary Cole</string>
+			<key>Phone</key>
+			<string>555-1414</string>
+			<key>Availability</key>
+			<false/>
+		</dict>
+	</array>
+	<key>Gastroenterology</key>
+	<array>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Nancy Clark</string>
+			<key>Phone</key>
+			<string>555-1515</string>
+			<key>Availability</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Henry Adams</string>
+			<key>Phone</key>
+			<string>555-1616</string>
+			<key>Availability</key>
+			<false/>
+		</dict>
+	</array>
+	<key>Psychiatry</key>
+	<array>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Sophia Williams</string>
+			<key>Phone</key>
+			<string>555-1717</string>
+			<key>Availability</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Daniel Thomas</string>
+			<key>Phone</key>
+			<string>555-1818</string>
+			<key>Availability</key>
+			<false/>
+		</dict>
+	</array>
+	<key>Oncology</key>
+	<array>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Laura James</string>
+			<key>Phone</key>
+			<string>555-1919</string>
+			<key>Availability</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>Name</key>
+			<string>Dr. George Wilson</string>
+			<key>Phone</key>
+			<string>555-2020</string>
+			<key>Availability</key>
+			<false/>
+		</dict>
+	</array>
+	<key>Urology</key>
+	<array>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Chris Evans</string>
+			<key>Phone</key>
+			<string>555-2121</string>
+			<key>Availability</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Olivia Brown</string>
+			<key>Phone</key>
+			<string>555-2222</string>
+			<key>Availability</key>
+			<false/>
+		</dict>
+	</array>
+	<key>Infectious Diseases</key>
+	<array>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Linda Adams</string>
+			<key>Phone</key>
+			<string>555-3012</string>
+			<key>Availability</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>Name</key>
+			<string>Dr. James Turner</string>
+			<key>Phone</key>
+			<string>555-6734</string>
+			<key>Availability</key>
+			<false/>
+		</dict>
+	</array>
+	<key>Hematology</key>
+	<array>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Sarah Johnson</string>
+			<key>Phone</key>
+			<string>555-9821</string>
+			<key>Availability</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Michael Chen</string>
+			<key>Phone</key>
+			<string>555-4590</string>
+			<key>Availability</key>
+			<false/>
+		</dict>
+	</array>
 </dict>
 </plist>
