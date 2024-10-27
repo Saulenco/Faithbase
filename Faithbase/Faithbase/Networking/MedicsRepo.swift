@@ -60,12 +60,14 @@ final class MedicsRepo {
         }
 
         matches = matches.sorted(by: { $0.1 > $1.1 })
+
+
+        var matchedSpecialty = "Primary Care"
         // Find the closest matching specialty
-        guard let matchedSpecialty = matches.first?.0 else {
-            print("No matching specialty found.")
-            return nil
+        if let firstMatch = matches.first, firstMatch.1 > 70 {
+            matchedSpecialty = firstMatch.0
         }
-        
+
         // Extract medics for the matched specialty
         guard let medicsArray = data[matchedSpecialty] as? [[String: Any]] else {
             print("Error reading medics for specialty: \(matchedSpecialty)")

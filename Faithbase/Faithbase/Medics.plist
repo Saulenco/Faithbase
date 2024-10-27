@@ -249,5 +249,24 @@
 			<false/>
 		</dict>
 	</array>
+	<key>Primary Care</key>
+	<array>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Emily Carter</string>
+			<key>Phone</key>
+			<string>555-7452</string>
+			<key>Availability</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>Name</key>
+			<string>Dr. Robert Wilson</string>
+			<key>Phone</key>
+			<string>555-3298</string>
+			<key>Availability</key>
+			<false/>
+		</dict>
+	</array>
 </dict>
 </plist>
