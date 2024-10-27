@@ -202,7 +202,7 @@ class ChatViewModel: ObservableObject {
         // Call the OpenAI endpoint with the complete prompt
         endpoint.makeOpenAIRequest(prompt: prompt) { [weak self] response in
             if let missingInfo = response?.missing_information {
-                self?.askForSpecificDetails(missingInfo: missingInfo)
+                self?.askForSpecificDetails(missingInfo: response?.message ?? "Could you be more specific about your symptoms?")
             } else if let speciality = response?.speciality {
                 let medic = MedicsRepo.getMedics(speciality)
                 let responseMessage = Message(description: response?.message ?? "-", medic: medic)

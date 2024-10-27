@@ -37,15 +37,15 @@ struct ChatView: View {
                     }
                     .padding()
                 }
-                .onChange(of: viewModel.messages) { 
+                .onChange(of: viewModel.messages) {
                     if let lastMessage = viewModel.messages.last {
                         withAnimation {
                             proxy.scrollTo(lastMessage.id, anchor: .bottom)
                         }
                     }
                 }
-                .onChange(of: viewModel.isLoading) { isLoading in
-                    if isLoading {
+                .onChange(of: viewModel.isLoading) {
+                    if viewModel.isLoading {
                         withAnimation {
                             proxy.scrollTo("loadingAnimationID", anchor: .bottom)
                         }
