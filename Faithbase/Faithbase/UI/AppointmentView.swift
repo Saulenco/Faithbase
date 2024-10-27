@@ -14,12 +14,11 @@ struct AppointmentView: View {
     
     var body: some View {
         HStack {
-            VStack(spacing: 16) {
+            VStack(spacing: 10) {
                 // Description field
                 Text(description)
                     .font(.body)
                     .multilineTextAlignment(.center)
-                    .padding()
                 
                 Divider()
                     .padding(.horizontal)
@@ -49,10 +48,9 @@ struct AppointmentView: View {
                             .cornerRadius(8)
                     }
                 }
-                .padding()
                 Spacer()
             }
-            .padding()
+            .padding(20)
             .background(Color(.systemBackground))
             .overlay(
                 RoundedRectangle(cornerRadius: 16)

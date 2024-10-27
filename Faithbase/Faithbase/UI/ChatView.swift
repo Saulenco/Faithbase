@@ -94,18 +94,28 @@ struct ChatView: View {
     }
     
     private func messageView(_ message: Message) -> some View {
-        Group {
-            if message.isUser {
-                if let document = message.document {
-                    DocumentView(documentName: document)
+        ZStack(alignment: .topLeading) {
+            Group {
+                if message.isUser {
+                    if let document = message.document {
+                        DocumentView(documentName: document)
+                    } else {
+                        userMessageView(message: message.text)
+                    }
+                } else if let medic = message.medic {
+                    AppointmentView(description: message.text,
+                                    medic: medic)
                 } else {
-                    userMessageView(message: message.text)
+                    responseMessageView(message: message.text)
                 }
-            } else if let medic = message.medic {
-                AppointmentView(description: message.text,
-                                medic: medic)
-            } else {
-                responseMessageView(message: message.text)
+            }
+            
+            if !message.isUser {
+                Image("doc")
+                    .resizable()
+                    .frame(width: 25, height: 25)
+                    .padding(.top, -8)
+                    .padding(.leading, -8)
             }
         }
         .transition(.move(edge: message.isUser ? .trailing : .leading).combined(with: .opacity))

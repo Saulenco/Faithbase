@@ -17,7 +17,7 @@ struct DocumentView: View {
                 // Document icon
                 Image(systemName: "doc.text.fill")
                     .font(.system(size: 25))
-                    .foregroundColor(.teal)
+                    .foregroundColor(Color.accentColor)
                 
                 Text(documentName)
                 
@@ -28,12 +28,12 @@ struct DocumentView: View {
             .cornerRadius(16)
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.teal, lineWidth: 2)
+                    .stroke(Color.accentColor, lineWidth: 1)
             )
             .shadow(radius: 5)
+            .frame(maxWidth: UIScreen.main.bounds.width * 0.7,
+                   alignment: .trailing)
         }
-        .frame(maxWidth: UIScreen.main.bounds.width * 0.7,
-               alignment: .trailing)
     }
 }
 
