@@ -18,8 +18,8 @@ struct Message: Identifiable, Equatable {
     let medic: Medic?
     let document: String?
     
-    init(userDocument: String) {
-        self.text = ""
+    init(userDocument: String, documentText: String) {
+        self.text = documentText
         self.isUser = true
         self.medic = nil
         self.document = userDocument
@@ -74,7 +74,7 @@ class ChatViewModel: ObservableObject {
             messages.append(newMessage)
         }
         inputText = ""
-        self.processMessage(newMessage.text)
+        self.processMessages()
     }
     
     func startRecording() {
@@ -131,7 +131,7 @@ class ChatViewModel: ObservableObject {
                         DispatchQueue.main.async {
                             let newMessage = Message(userText: messageText)
                             self.messages.append(newMessage)
-                            self.processMessage(newMessage.text)
+                            self.processMessages()
                         }
                     } else if let error = error {
                         print("Transcription error: \(error)")
@@ -154,8 +154,8 @@ class ChatViewModel: ObservableObject {
                "Have you tried any treatments or medications?",
                "How severe would you rate your symptoms on a scale of 1-10?"]
        
-    private func processMessage(_ message: String) {
-        guard hasMoreThanTwoWords(message) else {
+    private func processMessages() {
+        guard let lastMessage = messages.last, hasMoreThanTwoWords(lastMessage.text) else {
             askForMoreDetails()
             return
         }
@@ -168,7 +168,6 @@ class ChatViewModel: ObservableObject {
             let role = msg.isUser ? "User" : "AI"
             conversationHistory += "\(role): \(msg.text)\n"
         }
-        conversationHistory += "User: \(message)\n\n"
         
         let prompt = """
            \(conversationHistory)
@@ -222,7 +221,7 @@ class ChatViewModel: ObservableObject {
     private func askForMoreDetails() {
         // Get the list of general questions and filter out those that have already been asked
         let askedQuestions = messages.map { $0.text }
-        let availableQuestions = followUpQuestions.filter { !askedQuestions.contains($0) } ?? []
+        let availableQuestions = followUpQuestions.filter { !askedQuestions.contains($0) }
         
         // If there are no new questions left, use a default question or skip asking
         let genericQuestion = availableQuestions.randomElement() ?? "Could you provide additional information about your issue?"
@@ -298,9 +297,10 @@ class ChatViewModel: ObservableObject {
             text = extractTextFromTXT(url: fileurl) ?? ""
         }
         if !text.isEmpty {
-            let newMessage = Message(userDocument: fileurl.lastPathComponent)
+            let newMessage = Message(userDocument: fileurl.lastPathComponent,
+                                     documentText: "This is a document uploaded by user: \(text)")
             messages.append(newMessage)
-            processMessage(text)
+            processMessages()
         }
     }
 }

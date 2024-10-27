@@ -24,21 +24,30 @@ struct ChatView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 8) {
                         ForEach(viewModel.messages) { message in
-                           messageView(message)
+                            messageView(message)
                         }
+                        
                         if viewModel.isLoading {
                             HStack {
                                 LoadingAnimationView()
                             }
                             .padding()
+                            .id("loadingAnimationID") // Set an ID for the loading animation
                         }
                     }
                     .padding()
                 }
-                .onChange(of: viewModel.messages) { _ in
+                .onChange(of: viewModel.messages) { 
                     if let lastMessage = viewModel.messages.last {
                         withAnimation {
                             proxy.scrollTo(lastMessage.id, anchor: .bottom)
+                        }
+                    }
+                }
+                .onChange(of: viewModel.isLoading) { isLoading in
+                    if isLoading {
+                        withAnimation {
+                            proxy.scrollTo("loadingAnimationID", anchor: .bottom)
                         }
                     }
                 }
