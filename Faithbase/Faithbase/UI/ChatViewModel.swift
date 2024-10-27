@@ -266,7 +266,6 @@ class ChatViewModel: ObservableObject {
             }
         }
     }
-       }
        
        func hasMoreThanTwoWords(_ input: String) -> Bool {
            let words = input.split(separator: " ")
