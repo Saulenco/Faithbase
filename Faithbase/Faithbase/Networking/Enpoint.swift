@@ -8,9 +8,10 @@
 import CoreML
 import Foundation
 
-struct OpenAIResponse: Codable {
+struct OpenAIResponse: Decodable {
     let message: String
     let speciality: String?
+    let missing_information: String?
 }
 
 class Endpoint {
@@ -74,7 +75,6 @@ class Endpoint {
                 return
             }
             
-            
             self.parseOpenAIResponse(data: data, completion: completion)
         }
         
@@ -82,20 +82,23 @@ class Endpoint {
     }
 
     func parseOpenAIResponse(data: Data, completion: @escaping (OpenAIResponse?) -> Void) {
-        // Decode the response JSON
+        // Decode the response JSON from OpenAI
         if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
            let choices = json["choices"] as? [[String: Any]],
            let message = choices.first?["message"] as? [String: Any],
            let content = message["content"] as? String {
             
-            // Attempt to parse JSON within the response's content
+            // Attempt to parse JSON from OpenAI response content
             if let responseData = content.data(using: .utf8) {
                 do {
                     let openAIResponse = try JSONDecoder().decode(OpenAIResponse.self, from: responseData)
                     completion(openAIResponse)
                 } catch {
-                    print("Failed to parse message content: \(error)")
-                    completion(nil)
+                    print("Failed to parse OpenAI response content as OpenAIResponse object: \(error)")
+                    
+                    // If JSON parsing fails, assume content is a plain text message and create a default response
+                    let fallbackResponse = OpenAIResponse(message: content, speciality: nil, missing_information: nil)
+                    completion(fallbackResponse)
                 }
             } else {
                 print("Failed to convert content to data")

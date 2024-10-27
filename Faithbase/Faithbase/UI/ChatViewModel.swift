@@ -146,66 +146,132 @@ class ChatViewModel: ObservableObject {
         }
     }
     
-    func hasMoreThanTwoWords(_ input: String) -> Bool {
-        let words = input.split(separator: " ")
-        return words.count > 2
-    }
-    
-    
+    // Follow-up question categories based on common medical symptom information needs
+       private let followUpQuestions: [String: [String]] = [
+           "general": [
+               "Could you tell me more about your symptoms?",
+               "How long have you been experiencing these symptoms?",
+               "Is there anything that makes your symptoms better or worse?",
+               "Have you tried any treatments or medications?",
+               "How severe would you rate your symptoms on a scale of 1-10?"
+           ],
+           "pain": [
+               "Where exactly is the pain located?",
+               "On a scale of 1-10, how intense is the pain?",
+               "Is the pain constant, or does it come and go?",
+               "Have you noticed anything that triggers or alleviates the pain?"
+           ],
+           "fatigue": [
+               "How often do you feel fatigued?",
+               "Does the fatigue affect your daily activities?",
+               "Have you experienced any other symptoms along with the fatigue?"
+           ]
+       ]
+       
     private func processMessage(_ message: String) {
-        let responseMessages: [String] = ["Could you provide additional information about your issue?",
-                                          "Please share more specifics regarding your problem.",
-                                          "We’d love more details to better understand your situation.",
-                                          "Could you elaborate on the issue you’re experiencing?",
-                                          "Additional context would be helpful in addressing your problem.",
-                                          "Could you describe your problem in more detail?",
-                                          "Please include more information so we can assist you more effectively."]
         guard hasMoreThanTwoWords(message) else {
-            let response = Message(responseText: responseMessages.randomElement() ?? "")
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.4)) {
-                    self.messages.append(response)
-                }
-            }
-                
+            askForMoreDetails()
             return
         }
         
         self.isLoading = true
-        let symptoms = message
+        
+        // Construct the conversation history for the prompt
+        var conversationHistory = "This is an ongoing conversation between a user seeking medical advice and an AI medical assistant. The assistant's goal is to understand the user's symptoms fully, analyze their relevance, and provide guidance on the appropriate specialist if enough information is available.\n\nConversation:\n"
+        for msg in messages {
+            let role = msg.isUser ? "User" : "AI"
+            conversationHistory += "\(role): \(msg.text)\n"
+        }
+        conversationHistory += "User: \(message)\n\n"
+        
         let prompt = """
-           The user will input a text containing medical examination data or symptom descriptions. First, analyze the input to determine if it contains medically relevant information about health-related symptoms. If it does, recommend the type of medical specialist they should consult, using the JSON format:
+           \(conversationHistory)
+           
+           Instructions for the AI:
+           - The assistant should carefully analyze the conversation history to assess if there is sufficient medical information to determine a relevant specialist. Consider all available details provided by the user, including symptom descriptions, duration, intensity, location, and any additional context provided.
+           - If there is enough information to make a recommendation, the assistant should respond in JSON format, suggesting a relevant specialist based on the symptoms provided:
            
            {
-             "message": "Based on your symptoms, it would be best to consult a [specialist type]",
+             "message": "Based on your symptoms, it would be best to consult a [specialist type].",
              "speciality": "[specialist type]"
            }
            
-           Consider common medical specialties, such as cardiology, dermatology, gastroenterology, neurology, orthopedics, and psychiatry, and choose the one that best fits the user's symptoms.
-           
-           If the input does not contain relevant medical information, respond with a JSON format:
+           - If the user’s description is incomplete or lacks clarity, the assistant should identify the specific missing information required to provide an accurate recommendation. For example, ask about the location, intensity, frequency, or duration of symptoms. The assistant should respond with a JSON object structured as follows:
            
            {
-             "message": "Your input doesn't seem to contain medical symptoms. Could you please describe your symptoms in more detail?",
+             "message": "Could you provide more information on [missing information]? For example, [suggested questions based on context].",
+             "missing_information": "[missing category]"
            }
            
-           User's Symptoms: \(symptoms)
+           Examples of questions to ask:
+           - For pain: "Where is the pain located? How severe is it on a scale of 1 to 10? Is it constant or intermittent?"
+           - For fatigue: "How long have you been experiencing fatigue? Does it impact your daily activities? Are there other symptoms associated with it?"
+           - For respiratory issues: "Are you experiencing shortness of breath? Do you have a cough? If so, is it dry or productive?"
+           - For digestive issues: "Do you experience nausea or vomiting? Are there specific foods that worsen symptoms?"
+           
+           In all responses, the assistant should be detailed in prompting for more information, if necessary, to ensure an accurate recommendation. Aim to engage the user with questions that encourage a thorough description of their symptoms and medical context.
            """
         
+        // Call the OpenAI endpoint with the complete prompt
         endpoint.makeOpenAIRequest(prompt: prompt) { [weak self] response in
-            var medic: Medic?
-            if let speciality = response?.speciality {
-                medic = MedicsRepo.getMedics(speciality)
-            }
-            
-            let responseMessage = Message(description: response?.message ?? "-",
-                                          medic: medic)
-            DispatchQueue.main.async {
-                self?.messages.append(responseMessage)
-                self?.isLoading = false
+            if let missingInfo = response?.missing_information {
+                self?.askForSpecificDetails(category: missingInfo)
+            } else if let speciality = response?.speciality {
+                let medic = MedicsRepo.getMedics(speciality)
+                let responseMessage = Message(description: response?.message ?? "-", medic: medic)
+                DispatchQueue.main.async {
+                    self?.messages.append(responseMessage)
+                    self?.isLoading = false
+                }
+            } else {
+                let responseMessage = Message(responseText: response?.message ?? "-")
+                DispatchQueue.main.async {
+                    self?.messages.append(responseMessage)
+                    self?.isLoading = false
+                }
             }
         }
     }
+       
+    private func askForMoreDetails() {
+        // Get the list of general questions and filter out those that have already been asked
+        let askedQuestions = messages.map { $0.text }
+        let availableQuestions = followUpQuestions["general"]?.filter { !askedQuestions.contains($0) } ?? []
+        
+        // If there are no new questions left, use a default question or skip asking
+        let genericQuestion = availableQuestions.randomElement() ?? "Could you provide additional information about your issue?"
+        
+        let responseMessage = Message(responseText: genericQuestion)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.4)) {
+                self.messages.append(responseMessage)
+            }
+        }
+    }
+
+    private func askForSpecificDetails(category: String) {
+        // Get the list of specific questions for the category and filter out those that have already been asked
+        let askedQuestions = messages.map { $0.text }
+        let categoryQuestions = followUpQuestions[category] ?? followUpQuestions["general"] ?? []
+        let availableQuestions = categoryQuestions.filter { !askedQuestions.contains($0) }
+        
+        // If there are no new questions left, use a default question or skip asking
+        let specificQuestion = availableQuestions.randomElement() ?? "Could you provide additional information?"
+        
+        let responseMessage = Message(responseText: specificQuestion)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.4)) {
+                self.messages.append(responseMessage)
+                self.isLoading = false
+            }
+        }
+    }
+       }
+       
+       func hasMoreThanTwoWords(_ input: String) -> Bool {
+           let words = input.split(separator: " ")
+           return words.count > 2
+       }
     
     func extractTextFromPDF(url: URL) -> String? {
         guard let pdfDocument = PDFDocument(url: url) else { return nil }
