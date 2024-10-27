@@ -169,7 +169,7 @@ class ChatViewModel: ObservableObject {
             let role = msg.isUser ? "User" : "AI"
             conversationHistory += "\(role): \(msg.text)\n"
         }
-        
+
         let prompt = """
                \(conversationHistory)
                
@@ -182,7 +182,8 @@ class ChatViewModel: ObservableObject {
                  "message": "Based on your symptoms, it would be best to consult a [specialist type].",
                  "speciality": "[specialist type]"
                }
-
+               where speciality can be: Cardiology, Dermatology, Neurology, Orthopedics, Pediatrics, Ophthalmology, Endocrinology, Gastroenterology, Psychiatry, Oncology, Urology, Infectious Diseases, Hematology, Primary Care
+               
                - If additional information is truly necessary, identify the missing information and ask a specific follow-up question in the following JSON format. Ensure the question is clear, concise, and directly relevant to making an accurate recommendation:
 
                {
