@@ -147,26 +147,12 @@ class ChatViewModel: ObservableObject {
     }
     
     // Follow-up question categories based on common medical symptom information needs
-       private let followUpQuestions: [String: [String]] = [
-           "general": [
+       private let followUpQuestions: [String] = [
                "Could you tell me more about your symptoms?",
                "How long have you been experiencing these symptoms?",
                "Is there anything that makes your symptoms better or worse?",
                "Have you tried any treatments or medications?",
-               "How severe would you rate your symptoms on a scale of 1-10?"
-           ],
-           "pain": [
-               "Where exactly is the pain located?",
-               "On a scale of 1-10, how intense is the pain?",
-               "Is the pain constant, or does it come and go?",
-               "Have you noticed anything that triggers or alleviates the pain?"
-           ],
-           "fatigue": [
-               "How often do you feel fatigued?",
-               "Does the fatigue affect your daily activities?",
-               "Have you experienced any other symptoms along with the fatigue?"
-           ]
-       ]
+               "How severe would you rate your symptoms on a scale of 1-10?"]
        
     private func processMessage(_ message: String) {
         guard hasMoreThanTwoWords(message) else {
@@ -215,7 +201,7 @@ class ChatViewModel: ObservableObject {
         // Call the OpenAI endpoint with the complete prompt
         endpoint.makeOpenAIRequest(prompt: prompt) { [weak self] response in
             if let missingInfo = response?.missing_information {
-                self?.askForSpecificDetails(category: missingInfo)
+                self?.askForSpecificDetails(missingInfo: missingInfo)
             } else if let speciality = response?.speciality {
                 let medic = MedicsRepo.getMedics(speciality)
                 let responseMessage = Message(description: response?.message ?? "-", medic: medic)
@@ -236,7 +222,7 @@ class ChatViewModel: ObservableObject {
     private func askForMoreDetails() {
         // Get the list of general questions and filter out those that have already been asked
         let askedQuestions = messages.map { $0.text }
-        let availableQuestions = followUpQuestions["general"]?.filter { !askedQuestions.contains($0) } ?? []
+        let availableQuestions = followUpQuestions.filter { !askedQuestions.contains($0) } ?? []
         
         // If there are no new questions left, use a default question or skip asking
         let genericQuestion = availableQuestions.randomElement() ?? "Could you provide additional information about your issue?"
@@ -249,16 +235,8 @@ class ChatViewModel: ObservableObject {
         }
     }
 
-    private func askForSpecificDetails(category: String) {
-        // Get the list of specific questions for the category and filter out those that have already been asked
-        let askedQuestions = messages.map { $0.text }
-        let categoryQuestions = followUpQuestions[category] ?? followUpQuestions["general"] ?? []
-        let availableQuestions = categoryQuestions.filter { !askedQuestions.contains($0) }
-        
-        // If there are no new questions left, use a default question or skip asking
-        let specificQuestion = availableQuestions.randomElement() ?? "Could you provide additional information?"
-        
-        let responseMessage = Message(responseText: specificQuestion)
+    private func askForSpecificDetails(missingInfo: String) {
+        let responseMessage = Message(responseText: missingInfo)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.4)) {
                 self.messages.append(responseMessage)
@@ -267,10 +245,10 @@ class ChatViewModel: ObservableObject {
         }
     }
        
-       func hasMoreThanTwoWords(_ input: String) -> Bool {
-           let words = input.split(separator: " ")
-           return words.count > 2
-       }
+    func hasMoreThanTwoWords(_ input: String) -> Bool {
+        let words = input.split(separator: " ")
+        return words.count > 2
+    }
     
     func extractTextFromPDF(url: URL) -> String? {
         guard let pdfDocument = PDFDocument(url: url) else { return nil }
