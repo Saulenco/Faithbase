@@ -157,7 +157,7 @@ class ChatViewModel: ObservableObject {
        
     private func processMessages() {
         var messagesToProcess = messages
-        messagesToProcess.removeFirst()
+        messagesToProcess.removeAll(where: {$0.isUser == false})
         let allMessages = messagesToProcess.map{$0.text}.joined(separator: ", ")
         guard hasMoreThanTwoWords(allMessages) else {
             askForMoreDetails()
