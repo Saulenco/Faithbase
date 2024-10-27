@@ -162,46 +162,9 @@ class ChatViewModel: ObservableObject {
         }
         
         self.isLoading = true
-        
-        // Construct the conversation history for the prompt
-        var conversationHistory = "This is an ongoing conversation between a user seeking medical advice and an AI medical assistant. The assistant's goal is to understand the user's symptoms fully, analyze their relevance, and provide guidance on the appropriate specialist if enough information is available.\n\nConversation:\n"
-        for msg in messages {
-            let role = msg.isUser ? "User" : "AI"
-            conversationHistory += "\(role): \(msg.text)\n"
-        }
 
-        let prompt = """
-               \(conversationHistory)
-               
-               Instructions for the AI:
-               - Carefully analyze the conversation history to determine if the user has provided sufficient medically relevant information, such as symptoms, duration, intensity, location, and any other necessary context.
-               - Only if the provided information is incomplete or unclear should the assistant ask for additional specific details. Avoid asking unnecessary questions if the input already includes enough detail for an accurate recommendation.
-               - If there is enough information, recommend an appropriate specialist in the following JSON format:
-
-               {
-                 "message": "Based on your symptoms, it would be best to consult a [specialist type].",
-                 "speciality": "[specialist type]"
-               }
-               where speciality can be: Cardiology, Dermatology, Neurology, Orthopedics, Pediatrics, Ophthalmology, Endocrinology, Gastroenterology, Psychiatry, Oncology, Urology, Infectious Diseases, Hematology, Primary Care
-               
-               - If additional information is truly necessary, identify the missing information and ask a specific follow-up question in the following JSON format. Ensure the question is clear, concise, and directly relevant to making an accurate recommendation:
-
-               {
-                 "message": "Could you provide more information on [missing information]? For example, [example question based on context].",
-                 "missing_information": "[missing category]"
-               }
-
-               Guidelines for determining when additional information is needed:
-               - For pain: If location, severity, or duration is unclear, request these specifics. Otherwise, proceed with the available information.
-               - For fatigue: If the duration, severity, or impact on daily activities is missing, ask about these aspects. Do not ask if these are already covered.
-               - For respiratory issues: If relevant details like shortness of breath, cough type, or duration are missing, request them. Avoid redundancy if covered.
-               - For digestive issues: Ask about nausea, vomiting, or specific triggers only if not mentioned by the user.
-
-               The goal is to minimize repetitive or redundant questions while ensuring the assistant gathers enough information to make an informed recommendation.
-               """
-        
         // Call the OpenAI endpoint with the complete prompt
-        endpoint.makeOpenAIRequest(prompt: prompt) { [weak self] response in
+        endpoint.makeOpenAIRequest(for: messages) { [weak self] response in
             if let missingInfo = response?.missing_information {
                 self?.askForSpecificDetails(missingInfo: response?.message ?? "Could you be more specific about your symptoms?")
             } else if let speciality = response?.speciality {
